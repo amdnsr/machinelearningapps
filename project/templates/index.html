@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Home
+{% endblock %}
+
+{% block main %}
+    <br><br>
+    <div style = "padding-top:30px; padding-bottom:80px; float:right; width:30%; margin: 0 0; text-align:center; background-color: #F9FAFC; border: 1px #C6D6F6 solid;">
+        <form action="/upload" method="POST">
+            <h3 style = "color: #8197C1">Create a New Job</h3>
+            <br>
+            <div class="form-group">
+                <input autocomplete="off" autofocus class="form-control" name="file_count" min = "1" placeholder="No. of Files in the Job" type="number"/>
+            </div>
+            <br>
+            <button class="btn btn-primary" type="submit">Create Job</button>
+        </form>
+    </div>
+{% endblock %}
+
+

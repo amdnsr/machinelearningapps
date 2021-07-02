@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Reset
+{% endblock %}
+
+{% block main %}
+<div style = "padding-top:40px; padding-bottom:30px; width:30%; margin: 0 35%; text-align:center; background-color: #F9FAFC; border: 1px #C6D6F6 solid;">
+    <form action="/reset" method="POST">
+        <h3 style = "color: #8197C1">Reset Password</h3>
+        <br>
+        <div class="form-group">
+            <input autocomplete="off" autofocus class="form-control" name="username" placeholder="Username" type="text"/>
+        </div>
+        <div class="form-group">
+            <input autocomplete="off" autofocus class="form-control" name="email" placeholder="Email" type="email"/>
+        </div>
+        <button class="btn btn-primary" type="submit">Reset</button>
+    </form>
+</div>
+{% endblock %}

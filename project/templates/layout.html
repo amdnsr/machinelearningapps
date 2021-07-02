@@ -1,0 +1,73 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+
+        <!-- Required meta tags -->
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+
+        <!-- documentation at http://getbootstrap.com/docs/4.0/, alternative themes at https://bootswatch.com/4-alpha/ -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+        <title>
+            {% block title %}{% endblock %}
+        </title>
+        <link rel="stylesheet" type="text/css" href="/static/style.css">
+    </head>
+
+    <body>
+        <!--<nav class = "navbar">-->
+        <!--    <a href="/">Home</a>-->
+            <!--<li><a href="/about">About</a></li>-->
+            <!--<li><a href="/contact">Contact</a></li>-->
+            <!--<li><a href="/queue">Queue</a></li>-->
+            <!--<li><a href="/login">Login</a></li>-->
+            <!--<li><a href="/logout">LogOut</a></li>-->
+            <!--<li><a href="/register">Register</a></li>-->
+            <!--<li><a href="/jobs">Jobs</a></li>-->
+        <!--</nav>-->
+
+        <nav class="navbar navbar-inverse navbar-fixed-top">
+          <div class="container-fluid">
+            <div class="navbar-header">
+              <a class="navbar-brand" href="/">CFML IITD</a>
+            </div>
+            {% if session.user_id %}
+            <ul class="nav navbar-nav">
+                <li><a href="/">Home</a></li> <!-- class="active" -->
+                <li><a href="/about">About</a></li>
+                <!--<li><a href="/change">Change Password</a></li>-->
+                <li><a href="/contact">Contact</a></li>
+                <li><a href="/jobs">Jobs</a></li>
+                <!--<li><a href="/profile">Profile</a></li>-->
+                <li><a href="/queue">Queue</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="/profile">Profile</a></li>
+                <li><a href="/change">Change Password</a></li>
+                <li><a href="/logout"><span class="glyphicon glyphicon-log-out"></span> Log Out</a></li>
+            </ul>
+            {% else %}
+            <ul class="nav navbar-nav">
+                <li><a href="/">Home</a></li> <!-- class="active" -->
+                <li><a href="/about">About</a></li>
+                <li><a href="/contact">Contact</a></li>
+                <li><a href="/queue">Queue</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+              <li><a href="/register"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li>
+              <li><a href="/login"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+            </ul>
+            {% endif %}
+          </div>
+        </nav>
+
+        <main class="container p-5 page_padding">
+            {% block main %}{% endblock %}
+        </main>
+    </body>
+    <br>
+    <footer class="small text-center text-muted">
+        Copyright | <a href = "http://www.iitd.ac.in"> IIT Delhi</a>
+    </footer>
+</html>

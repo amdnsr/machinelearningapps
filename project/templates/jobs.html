@@ -1,0 +1,72 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Jobs
+{% endblock %}
+
+{% block main %}
+    <!--<div>-->
+    <!--    <form action = /jobs method = "POST">-->
+    <!--        <input type = number name = no_of_files autofocus placeholder = "No. of Files"/>-->
+    <!--        <br><br>-->
+    <!--            <input type = file name = "file"/>-->
+    <!--            <br><br>-->
+    <!--        <button class btn btn-primary type = submit>Submit Job</button>-->
+    <!--    </form>-->
+    <!--</div>-->
+<!--    <p>Create a New Job</p>-->
+
+
+<!--<div id="LeftColumn" style="float: left; width: 20%; border: 1px black solid;">-->
+<!--    <p>Left Column</p>-->
+<!--</div>-->
+<!--<div id="CenterColumn" style="margin: 0 25%; border: 1px black solid;">-->
+<!--    <p>Some text text text text text text text text text (in a <p> element).</p>-->
+<!--    <div style="width: 100%; text-align:center;">-->
+<!--        <p>The container I want to create</p>-->
+<!--    </div>-->
+<!--    <p>Some text (in another <p> element).</p>-->
+<!--</div>-->
+<!--<div id="RightColumn" style="float: right; width: 10%; border: 1px black solid;">-->
+<!--    <p>Right Column</p>-->
+<!--</div>-->
+
+
+
+    <table class="table table-striped" style = "float: left; width 30%; margin: 0 0; text-align: center';">
+        <thead>
+            <tr>
+                <th>JOBID</th>
+                <th>No. of files</th>
+                <th>Time of Creation</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {%for job in myjobs%}
+                <tr>
+                    <!-- current_prices[stock.symbol] is a dict say d, now d["name"] is the name of the company-->
+                    <!-- we can call a python function from a jinja template using app.add_template_global(<function_name>, name='<alias / new name for the jinja template, alias may be the same as function_name>') -->
+                    <td>{{job["job_id"]}}</td>
+                    <td>{{job["file_count"]}}</td>
+                    <td>{{job["time"]}}</td>
+                    <td>NA</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <br><br><br><br><br><br><br><br><br><br><br><br>
+    <div style = "padding-top:30px; padding-bottom:80px; float:right; width:30%; margin: 0 0; text-align:center; background-color: #F9FAFC; border: 1px #C6D6F6 solid;">
+        <form action="/upload" method="POST">
+            <h3 style = "color: #8197C1">Create a New Job</h3>
+            <br>
+            <div class="form-group">
+                <input autocomplete="off" autofocus class="form-control" name="file_count" min = "1" placeholder="No. of Files in the Job" type="number"/>
+            </div>
+            <br>
+            <button class="btn btn-primary" type="submit">Create Job</button>
+        </form>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Profile
+{% endblock %}
+
+{% block main %}
+<div style = "padding-top:40px; padding-bottom:30px; width:30%; margin: 0 35%; text-align:center; background-color: #F9FAFC; border: 1px #C6D6F6 solid;">
+    <form action="/register" method="POST">
+        <h3 style = "color: #8197C1">My Profile</h3>
+        <br>
+        <div class="form-group">
+            <input autocomplete="off" autofocus class="form-control" name="fname" placeholder="{{fname}}" type="text"/>
+        </div>
+        <div class="form-group">
+            <input autocomplete="off" autofocus class="form-control" name="lname" placeholder="{{lname}}" type="text"/>
+        </div>
+        <div class="form-group">
+            <input autocomplete="off" autofocus class="form-control" name="username" placeholder="{{username}}" type="text"/>
+        </div>
+        <div class="form-group">
+            <input autocomplete="off" autofocus class="form-control" name="email" placeholder="{{email}}" type="email"/>
+        </div>
+    </form>
+</div>
+
+{% endblock %}
