@@ -243,9 +243,13 @@ def jobs():
         home_dir = "./users/" + username
 
         jobs_id_dir = home_dir + "/jobs/" + str(job_id) + "/"
+        jobs_id_input_dir = home_dir + "/jobs/" + str(job_id) + "/" "input" + "/"
+        jobs_id_output_dir = home_dir + "/jobs/" + str(job_id) + "/" "output" + "/"
         createFolder(jobs_id_dir)
+        createFolder(jobs_id_input_dir)
+        createFolder(jobs_id_output_dir)
 
-        UPLOAD_FOLDER = jobs_id_dir
+        UPLOAD_FOLDER = jobs_id_input_dir
         print(UPLOAD_FOLDER)
 
         app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
