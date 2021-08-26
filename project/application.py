@@ -7,6 +7,7 @@ import pytz
 from cs50 import SQL
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
+from torch._C import device
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
@@ -275,9 +276,44 @@ def jobs():
 
         path, dirs, files = next(os.walk(UPLOAD_FOLDER))
         print(files)
-        # cartoonize(files[0])
-        
+        original_file_name = files[0]
+        cartoonized_file_name = "cartoonized_" + files[0]
+        input_path = os.path.join(jobs_id_input_dir, original_file_name)
+        output_path = os.path.join(jobs_id_output_dir, cartoonized_file_name)
+        cartoonize(input_path, output_path)
         return render_template("success.html", message="The job has been create and the JOBID is {}".format(job_id))
+
+
+def inv_normalize(img, device):
+    # Adding 0.1 to all normalization values since the model is trained (erroneously) without correct de-normalization
+    mean = torch.Tensor([0.485, 0.456, 0.406]).to(device)
+    std = torch.Tensor([0.229, 0.224, 0.225]).to(device)
+
+    img = img * std.view(1, 3, 1, 1) + mean.view(1, 3, 1, 1)
+    img = img.clamp(0, 1)
+    return img
+
+def predict_images(image_list, device, netG):
+    trf = get_no_aug_transform()
+    image_list = torch.from_numpy(np.array([trf(img).numpy() for img in image_list])).to(device)
+
+    with torch.no_grad():
+        generated_images = netG(image_list)
+    generated_images = inv_normalize(generated_images, device)
+
+    pil_images = []
+    for i in range(generated_images.size()[0]):
+        generated_image = generated_images[i].cpu()
+        pil_images.append(TF.to_pil_image(generated_image))
+    return pil_images
+
+def predict_file(input_path, output_path, device, netG):
+    # File is image
+    if mimetypes.guess_type(input_path)[0].startswith("image"):
+        image = Image.open(input_path).convert('RGB')
+        predicted_image = predict_images([image], device, netG)[0]
+        predicted_image.save(output_path)
+
 
 def cartoonize(input_path, output_path, user_stated_device="cpu", batch_size=4):
 
@@ -288,7 +324,7 @@ def cartoonize(input_path, output_path, user_stated_device="cpu", batch_size=4):
     netG.eval()
 
     netG.load_state_dict(torch.load(pretrained_dir, map_location=torch.device('cpu')))
-    predict.predict_file(input_path, output_path)
+    predict_file(input_path, output_path,  device, netG)
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
