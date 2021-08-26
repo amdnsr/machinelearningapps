@@ -14,6 +14,29 @@ from helpers import apology, clearFolderContents, createFolder, login_required
 from send_mail import send_mail
 from website_data import website
 
+
+
+
+from PIL import Image
+import argparse
+import os
+import mimetypes
+from utils.transforms import get_no_aug_transform
+import torch
+from models.generator import Generator
+import numpy as np
+import torchvision.transforms.functional as TF
+import torch.nn.functional as F
+from torchvision import transforms
+import cv2
+from torchvision import utils as vutils
+import subprocess
+import tempfile
+import re
+from tqdm import tqdm
+import time
+import predict
+
 app = Flask(__name__)
 
 
@@ -245,8 +268,23 @@ def jobs():
 
         tmp_directory = './users/' + username + "/tmp"
         clearFolderContents(tmp_directory)
+
+        path, dirs, files = next(os.walk(UPLOAD_FOLDER))
+        print(files)
+        # cartoonize(files[0])
+        
         return render_template("success.html", message="The job has been create and the JOBID is {}".format(job_id))
 
+def cartoonize(input_path, output_path, user_stated_device="cpu", batch_size=4):
+
+    # input_path, output_path, user_stated_device, batch_size = vars(parser.parse_args()).values()
+    device = torch.device(user_stated_device)
+    pretrained_dir = "./checkpoints/trained_netG.pth"
+    netG = Generator().to(device)
+    netG.eval()
+
+    netG.load_state_dict(torch.load(pretrained_dir, map_location=torch.device('cpu')))
+    predict.predict_file(input_path, output_path)
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
