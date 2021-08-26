@@ -37,7 +37,7 @@ import re
 from tqdm import tqdm
 import time
 import predict
-
+import Cartoonizer
 app = Flask(__name__)
 
 
@@ -280,7 +280,8 @@ def jobs():
         cartoonized_file_name = "cartoonized_" + files[0]
         input_path = os.path.join(jobs_id_input_dir, original_file_name)
         output_path = os.path.join(jobs_id_output_dir, cartoonized_file_name)
-        cartoonize(input_path, output_path)
+        cartoonizer = Cartoonizer.Cartoonizer()
+        cartoonizer.cartoonize(input_path, output_path)
         return render_template("success.html", message="The job has been create and the JOBID is {}".format(job_id))
 
 
