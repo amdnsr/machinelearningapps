@@ -1,4 +1,4 @@
-# Lab Website
+# Cartoon Gan API
 
 ## Requirements
 
@@ -26,3 +26,13 @@ flask run
 * To use the email sender code, we need to allow [DisplayUnlockCaptcha](https://accounts.google.com/DisplayUnlockCaptcha) and [less secure apps](https://myaccount.google.com/lesssecureapps)
 
 
+## Test
+
+- Create an account and create a job
+- Upload a single image per job
+- The default example is shown below
+
+
+Original | Cartoonized Image
+|----------|----------|
+|![input_image](project/users/default/jobs/1/input/boat.png) | ![output_image](project/users/default/jobs/1/output/cartoonized_boat.png|
