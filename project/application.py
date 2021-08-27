@@ -38,6 +38,14 @@ from tqdm import tqdm
 import time
 import predict
 import Cartoonizer
+
+
+
+from PIL import Image
+import base64
+import io
+
+
 app = Flask(__name__)
 
 
@@ -282,7 +290,13 @@ def jobs():
         output_path = os.path.join(jobs_id_output_dir, cartoonized_file_name)
         cartoonizer = Cartoonizer.Cartoonizer()
         cartoonizer.cartoonize(input_path, output_path)
-        return render_template("success.html", message="The job has been create and the JOBID is {}".format(job_id))
+        relative_image_path = jobs_id_output_dir + cartoonized_file_name
+        # https://buraksenol.medium.com/pass-images-to-html-without-saving-them-as-files-using-python-flask-b055f29908a
+        im = Image.open(output_path)
+        data = io.BytesIO()
+        im.save(data, "JPEG")
+        encoded_img_data = base64.b64encode(data.getvalue())
+        return render_template("cartoonized.html", message="The job has been created and the JOBID is {}".format(job_id), img_data=encoded_img_data.decode('utf-8'))
 
 
 def inv_normalize(img, device):
