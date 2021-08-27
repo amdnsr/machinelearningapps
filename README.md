@@ -35,4 +35,8 @@ flask run
 
 Original | Cartoonized Image
 |----------|----------|
-|![input_image](project/users/default/jobs/1/input/boat.png) | ![output_image](project/users/default/jobs/1/output/cartoonized_boat.png|
+|![input_image](project/users/default/jobs/1/input/boat.png) | ![output_image](project/users/default/jobs/1/output/cartoonized_boat.png)|
+
+
+## Credits
+- [Filip Andersson](https://github.com/FilipAndersson245)
