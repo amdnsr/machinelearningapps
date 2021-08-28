@@ -284,19 +284,28 @@ def jobs():
 
         path, dirs, files = next(os.walk(UPLOAD_FOLDER))
         print(files)
-        original_file_name = files[0]
-        cartoonized_file_name = "cartoonized_" + files[0]
-        input_path = os.path.join(jobs_id_input_dir, original_file_name)
-        output_path = os.path.join(jobs_id_output_dir, cartoonized_file_name)
-        cartoonizer = Cartoonizer.Cartoonizer()
-        cartoonizer.cartoonize(input_path, output_path)
-        relative_image_path = jobs_id_output_dir + cartoonized_file_name
-        # https://buraksenol.medium.com/pass-images-to-html-without-saving-them-as-files-using-python-flask-b055f29908a
-        im = Image.open(output_path)
-        data = io.BytesIO()
-        im.save(data, "JPEG")
-        encoded_img_data = base64.b64encode(data.getvalue())
-        return render_template("cartoonized.html", message="The job has been created and the JOBID is {}".format(job_id), img_data=encoded_img_data.decode('utf-8'))
+        img_data_list = []
+        for file in files:            
+            original_file_name = file
+            cartoonized_file_name = "cartoonized_" + original_file_name
+            input_path = os.path.join(jobs_id_input_dir, original_file_name)
+            output_path = os.path.join(jobs_id_output_dir, cartoonized_file_name)
+            cartoonizer = Cartoonizer.Cartoonizer()
+            cartoonizer.cartoonize(input_path, output_path)
+            relative_image_path = jobs_id_output_dir + cartoonized_file_name
+            # https://buraksenol.medium.com/pass-images-to-html-without-saving-them-as-files-using-python-flask-b055f29908a
+            im_input = Image.open(input_path)
+            data = io.BytesIO()
+            im_input.save(data, "JPEG")
+            encoded_img_input_data = base64.b64encode(data.getvalue())
+
+            im_output = Image.open(output_path)
+            data = io.BytesIO()
+            im_output.save(data, "JPEG")
+            encoded_img_output_data = base64.b64encode(data.getvalue())
+            image_tuple = (encoded_img_input_data.decode('utf-8'), encoded_img_output_data.decode('utf-8'))
+            img_data_list.append(image_tuple)
+        return render_template("cartoonized.html", message="The job has been created and the JOBID is {}".format(job_id), img_data=img_data_list)
 
 
 @app.route("/login", methods=["GET", "POST"])

@@ -8,8 +8,12 @@
     <div>
         {{message}}
     </div>
-    <div>
-        <img id="picture" src="data:image/jpeg;base64,{{img_data}}">
-    </div>
+    {% for img_input, img_output in img_data %}
+        <div>
+            <img id="picture" src="data:image/jpeg;base64,{{img_input}}">
+            <img id="picture" src="data:image/jpeg;base64,{{img_output}}">
+        </div>
+        <br>
+    {% endfor %}
     <!-- <img src="/static/images/{{pic}}"/> -->
 {% endblock %}
