@@ -299,48 +299,6 @@ def jobs():
         return render_template("cartoonized.html", message="The job has been created and the JOBID is {}".format(job_id), img_data=encoded_img_data.decode('utf-8'))
 
 
-def inv_normalize(img, device):
-    # Adding 0.1 to all normalization values since the model is trained (erroneously) without correct de-normalization
-    mean = torch.Tensor([0.485, 0.456, 0.406]).to(device)
-    std = torch.Tensor([0.229, 0.224, 0.225]).to(device)
-
-    img = img * std.view(1, 3, 1, 1) + mean.view(1, 3, 1, 1)
-    img = img.clamp(0, 1)
-    return img
-
-def predict_images(image_list, device, netG):
-    trf = get_no_aug_transform()
-    image_list = torch.from_numpy(np.array([trf(img).numpy() for img in image_list])).to(device)
-
-    with torch.no_grad():
-        generated_images = netG(image_list)
-    generated_images = inv_normalize(generated_images, device)
-
-    pil_images = []
-    for i in range(generated_images.size()[0]):
-        generated_image = generated_images[i].cpu()
-        pil_images.append(TF.to_pil_image(generated_image))
-    return pil_images
-
-def predict_file(input_path, output_path, device, netG):
-    # File is image
-    if mimetypes.guess_type(input_path)[0].startswith("image"):
-        image = Image.open(input_path).convert('RGB')
-        predicted_image = predict_images([image], device, netG)[0]
-        predicted_image.save(output_path)
-
-
-def cartoonize(input_path, output_path, user_stated_device="cpu", batch_size=4):
-
-    # input_path, output_path, user_stated_device, batch_size = vars(parser.parse_args()).values()
-    device = torch.device(user_stated_device)
-    pretrained_dir = "./checkpoints/trained_netG.pth"
-    netG = Generator().to(device)
-    netG.eval()
-
-    netG.load_state_dict(torch.load(pretrained_dir, map_location=torch.device('cpu')))
-    predict_file(input_path, output_path,  device, netG)
-
 @app.route("/login", methods=["GET", "POST"])
 def login():
     session.clear()
