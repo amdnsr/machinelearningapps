@@ -7,7 +7,6 @@ import pytz
 from cs50 import SQL
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
-from torch._C import device
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
@@ -16,29 +15,17 @@ from send_mail import send_mail
 from website_data import website
 
 
-
-
-from PIL import Image
-import argparse
-import os
-import mimetypes
-from utils.transforms import get_no_aug_transform
-import torch
-from models.generator import Generator
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.applications.xception import Xception
+from tensorflow.keras.models import load_model
+from pickle import load
 import numpy as np
-import torchvision.transforms.functional as TF
-import torch.nn.functional as F
-from torchvision import transforms
-import cv2
-from torchvision import utils as vutils
-import subprocess
-import tempfile
-import re
-from tqdm import tqdm
-import time
-import predict
-import Cartoonizer
+from PIL import Image
+import matplotlib.pyplot as plt
+import argparse
 
+import CaptionGenerator
 
 
 from PIL import Image
@@ -285,28 +272,40 @@ def jobs():
 
         path, dirs, files = next(os.walk(UPLOAD_FOLDER))
         print(files)
-        img_data_list = []
+        image_caption_list = []
+
+        max_length = 32
+        tokenizer = load(open("tokenizer.p","rb"))
+        model = load_model('checkpoints/model_9.h5')
+        xception_model = Xception(include_top=False, pooling="avg")
+
+        captiongenerator = CaptionGenerator.CaptionGenerator(model, xception_model, tokenizer, max_length)
+
         for file in files:            
             original_file_name = file
-            cartoonized_file_name = "cartoonized_" + original_file_name
+            original_file_name_wo_extension = original_file_name.split(".")[0]
+            caption_file_name = original_file_name_wo_extension + ".txt"
             input_path = os.path.join(jobs_id_input_dir, original_file_name)
-            output_path = os.path.join(jobs_id_output_dir, cartoonized_file_name)
-            cartoonizer = Cartoonizer.Cartoonizer()
-            cartoonizer.cartoonize(input_path, output_path)
-            relative_image_path = jobs_id_output_dir + cartoonized_file_name
+            output_path = os.path.join(jobs_id_output_dir, caption_file_name)
+
             # https://buraksenol.medium.com/pass-images-to-html-without-saving-them-as-files-using-python-flask-b055f29908a
             im_input = Image.open(input_path)
             data = io.BytesIO()
             im_input.save(data, "JPEG")
             encoded_img_input_data = base64.b64encode(data.getvalue())
 
-            im_output = Image.open(output_path)
-            data = io.BytesIO()
-            im_output.save(data, "JPEG")
-            encoded_img_output_data = base64.b64encode(data.getvalue())
-            image_tuple = (encoded_img_input_data.decode('utf-8'), encoded_img_output_data.decode('utf-8'))
-            img_data_list.append(image_tuple)
-        return render_template("cartoonized.html", message="The job has been created and the JOBID is {}".format(job_id), img_data=img_data_list)
+            caption = captiongenerator.get_description(input_path)
+            with open(output_path, 'w') as f:
+                f.write(caption)
+            image_caption_tuple = (encoded_img_input_data.decode('utf-8'), caption)
+            image_caption_list.append(image_caption_tuple)
+            # im_output = Image.open(output_path)
+            # data = io.BytesIO()
+            # im_output.save(data, "JPEG")
+            # encoded_img_output_data = base64.b64encode(data.getvalue())
+            # image_tuple = (encoded_img_input_data.decode('utf-8'), encoded_img_output_data.decode('utf-8'))
+            # img_data_list.append(image_tuple)
+        return render_template("caption.html", message="The job has been created and the JOBID is {}".format(job_id), image_caption_list=image_caption_list)
 
 
 @app.route("/login", methods=["GET", "POST"])
