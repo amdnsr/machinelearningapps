@@ -208,6 +208,7 @@ def jobs():
         username = rows[0]["username"]
 
         UPLOAD_FOLDER = './users/' + username + "/tmp"
+        createFolder(UPLOAD_FOLDER)
         print(UPLOAD_FOLDER)
         ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 

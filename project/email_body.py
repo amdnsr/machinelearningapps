@@ -8,8 +8,7 @@ Just click on this <a href="{}">link</a> to reset your password<br><br>
 Alternatively, if the link doesn't work, please copy this link and paste it into your browser.<br><br>
 {}<br><br>
 
-Regards,<br>
-<b>Team CFML IITD</b>
+Regards<br>
 """
 
 html_msg_new_user = """
@@ -20,6 +19,5 @@ Just click on this <a href="{}">link</a> to activate your account.<br><br>
 Alternatively, if the link doesn't work, please copy this link and paste it into your browser.<br><br>
 {}<br><br>
 
-Regards,<br>
-<b>Team CFML IITD</b>
+Regards<br>
 """
