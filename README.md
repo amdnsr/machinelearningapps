@@ -33,10 +33,7 @@ flask run
 - The default example is shown below
 
 
-Original | Cartoonized Image
+Input Image | Caption
 |----------|----------|
-|![input_image](project/users/default/jobs/1/input/boat.png) | ![output_image](project/users/default/jobs/1/output/cartoonized_boat.png)|
+|![input_image](project/users/default/jobs/1/input/boat.png) | man in yellow kayak is paddling through the water|
 
-
-## Credits
-- [Filip Andersson](https://github.com/FilipAndersson245)
