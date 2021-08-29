@@ -1,3 +1,5 @@
 .vscode
 *.pyc
-imagecaptiongenenv
+textsummarizationenv
+pytorch_model.bin
+export_env.sh

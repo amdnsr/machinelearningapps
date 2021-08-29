@@ -15,17 +15,8 @@ from send_mail import send_mail
 from website_data import website
 
 
-from tensorflow.keras.preprocessing.text import Tokenizer
-from tensorflow.keras.preprocessing.sequence import pad_sequences
-from tensorflow.keras.applications.xception import Xception
-from tensorflow.keras.models import load_model
-from pickle import load
-import numpy as np
-from PIL import Image
-import matplotlib.pyplot as plt
-import argparse
 
-import CaptionGenerator
+import TextSummarizer
 
 
 from PIL import Image
@@ -272,40 +263,26 @@ def jobs():
 
         path, dirs, files = next(os.walk(UPLOAD_FOLDER))
         print(files)
-        image_caption_list = []
+        text_summary_list = []
 
-        max_length = 32
-        tokenizer = load(open("tokenizer.p","rb"))
-        model = load_model('checkpoints/model_9.h5')
-        xception_model = Xception(include_top=False, pooling="avg")
-
-        captiongenerator = CaptionGenerator.CaptionGenerator(model, xception_model, tokenizer, max_length)
-
+        model_directory = "my_model_directory"
+        textsummarizer = TextSummarizer.TextSummarizer(model_directory)
+        
         for file in files:            
             original_file_name = file
-            original_file_name_wo_extension = original_file_name.split(".")[0]
-            caption_file_name = original_file_name_wo_extension + ".txt"
+            summary_file_name = "summary_" + original_file_name
             input_path = os.path.join(jobs_id_input_dir, original_file_name)
-            output_path = os.path.join(jobs_id_output_dir, caption_file_name)
+            output_path = os.path.join(jobs_id_output_dir, summary_file_name)
 
-            # https://buraksenol.medium.com/pass-images-to-html-without-saving-them-as-files-using-python-flask-b055f29908a
-            im_input = Image.open(input_path)
-            data = io.BytesIO()
-            im_input.save(data, "JPEG")
-            encoded_img_input_data = base64.b64encode(data.getvalue())
-
-            caption = captiongenerator.get_description(input_path)
+            text = ""
+            with open(input_path, 'r') as f:
+                text = f.read()
+            summary = textsummarizer.get_summary(text)
             with open(output_path, 'w') as f:
-                f.write(caption)
-            image_caption_tuple = (encoded_img_input_data.decode('utf-8'), caption)
-            image_caption_list.append(image_caption_tuple)
-            # im_output = Image.open(output_path)
-            # data = io.BytesIO()
-            # im_output.save(data, "JPEG")
-            # encoded_img_output_data = base64.b64encode(data.getvalue())
-            # image_tuple = (encoded_img_input_data.decode('utf-8'), encoded_img_output_data.decode('utf-8'))
-            # img_data_list.append(image_tuple)
-        return render_template("caption.html", message="The job has been created and the JOBID is {}".format(job_id), image_caption_list=image_caption_list)
+                f.write(summary)
+            text_summary_tuple = (text, summary)
+            text_summary_list.append(text_summary_tuple)
+        return render_template("summary.html", message="The job has been created and the JOBID is {}".format(job_id), text_summary_list=text_summary_list)
 
 
 @app.route("/login", methods=["GET", "POST"])

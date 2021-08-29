@@ -1,0 +1,1 @@
+BART is a denoising autoencoder for pretraining sequence-to-sequence models. It is trained by corrupting text with an arbitrary noising function, and learning a model to reconstruct the original text. BART is particularly effective when fine tuned for text generation but also works well for comprehension tasks.
