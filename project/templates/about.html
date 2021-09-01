@@ -5,8 +5,34 @@ About
 {% endblock %}
 
 {% block main %}
+<div>
+    <br>
+    <br>
+    This website provides a User Interface to run the following Machine Learning Applications</p>
+</div>    
     <div>
-        <p>
-            This website provides a User Interface to generate captions for images using a deep neural network model.</p>
+          <div class="row">
+            <div class="column" style="background-color:#ffffff;">
+              <h2>Caption Generation</h2>
+              <p>This service generates captions for images using a deep neural network model trained in tensorflow.</p>
+            </div>
+            <div class="column" style="background-color:#ffffff;">
+              <h2>Cartoonization</h2>
+              <p>This service cartoonizes images using the cartoonizer developed by <a href="https://github.com/FilipAndersson245">Filip Andersson, Jönköping University</a>.
+                <br>
+                The Generative Adversial Network (GAN) model was trained on over <a href="https://github.com/FilipAndersson245/cartoon-gan#description">60,000 images</a> from works by Hayao Miyazaki at Studio Ghibli.</a> </p>
+            </div>
+            <div class="column" style="background-color:#ffffff;">
+              <h2>Text Summarization</h2>
+              <p>This service summarizes a given text using the deep learning model called <a href="https://github.com/pytorch/fairseq/tree/master/examples/bart">Bart</a> by Facebook</p>
+            </div>
+          </div>
+                          <!-- "Generate captions for images using a deep neural network model"
+
+            {% for mlservice in mlservices%}
+            <div>
+                <li>{{mlservice}}</li>
+            </div>
+            {% endfor %} -->
     </div>
 {% endblock %}
