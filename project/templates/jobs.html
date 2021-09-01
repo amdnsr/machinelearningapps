@@ -63,7 +63,17 @@
             <br>
             <div class="form-group">
                 <input autocomplete="off" autofocus class="form-control" name="file_count" min = "1" placeholder="No. of Files in the Job" type="number"/>
+                <!-- <input placeholder="Task Type" type="select"/> -->
+                <br>
             </div>
+            <select name="task_type" aria-placeholder="hello">
+                <option value="none" selected disabled hidden>
+                    Select an Option
+                <option value="captiongeneration">Caption Generation</option>
+                <option value="cartoonization">Cartoonization</option>
+                <option value="textsummarization">Text Summarization</option>
+            </select>
+            <br>
             <br>
             <button class="btn btn-primary" type="submit">Create Job</button>
         </form>

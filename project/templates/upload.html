@@ -9,6 +9,7 @@
         <form action = /jobs enctype="multipart/form-data" method = "POST">
             <!--{% set file_count = file_count %}-->
             <input type="hidden" name="file_count" value={{file_count}} />
+            <input type="hidden" name="task_type" value={{task_type}} />
             {% for i in range(file_count) %}
                 {% set filename = "file_{}".format(i)%}
                 <input type = file name = {{filename}} /><br>
