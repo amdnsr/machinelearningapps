@@ -37,8 +37,10 @@
         <thead>
             <tr>
                 <th>JOBID</th>
+                <th>Task Type</th>
                 <th>No. of files</th>
-                <th>Time of Creation</th>
+                <th>Creation Time</th>
+                <th>Completion Time</th>
                 <th>Status</th>
             </tr>
         </thead>
@@ -47,11 +49,13 @@
                 <tr>
                     <!-- current_prices[stock.symbol] is a dict say d, now d["name"] is the name of the company-->
                     <!-- we can call a python function from a jinja template using app.add_template_global(<function_name>, name='<alias / new name for the jinja template, alias may be the same as function_name>') -->
-                    <td>{{job["job_id"]}}</td>
-                    <td>{{job["file_count"]}}</td>
-                    <td>{{job["time"]}}</td>
-                    <td>NA</td>
-                </tr>
+                        <td>{{job["job_id"]}}</td>
+                        <td>{{job["task_type"]}}</td>
+                        <td>{{job["file_count"]}}</td>
+                        <td>{{job["creation_time"]}}</td>
+                        <td>{{job["completion_time"]}}</td>
+                        <td>{{job["status"]}}</td>
+                    </tr>
             {% endfor %}
         </tbody>
     </table>
