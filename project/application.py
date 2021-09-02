@@ -4,6 +4,7 @@ import secrets
 from tempfile import mkdtemp
 
 import pytz
+import dateutil.parser
 from cs50 import SQL
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
@@ -12,17 +13,11 @@ from werkzeug.utils import secure_filename
 
 from helpers import apology, clearFolderContents, createFolder, login_required
 from send_mail import send_mail
-from website_data import website
+from website_data import website, api_home
+import json
 
-
-
-import TextSummarizer
-
-
-from PIL import Image
-import base64
-import io
-
+import BinaryData_Base64_Utils
+import requests
 
 app = Flask(__name__)
 
@@ -175,7 +170,9 @@ def jobs():
         rows = db.execute("SELECT * FROM users where id = :id;", id=id)
 
         file_count = int(request.form.get("file_count"))
+        task_type = str(request.form.get("task_type"))
         print(file_count)
+        print("TASK TYPE", task_type)
         # Store the files in the username/tmp folder
         # then check if the files arer of coorect type and not malicious
         # then assign a job id
@@ -215,16 +212,18 @@ def jobs():
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        time = datetime.datetime.now(pytz.timezone(
+        creation_time = datetime.datetime.now(pytz.timezone(
             'Asia/Calcutta')).strftime('%Y-%m-%d %H:%M:%S')
-        status = db.execute("INSERT INTO jobs (user_id, file_count, time) VALUES (:user_id, :file_count, :time);",
-                            user_id=id, file_count=file_count, time=time)
+        
+        job_status = "In progress"
+        status = db.execute("INSERT INTO jobs (user_id, task_type, file_count, status, creation_time, completion_time) VALUES (:user_id, :task_type, :file_count, :status, :creation_time, :completion_time);",
+                            user_id=id, task_type=task_type, file_count=file_count, status=job_status, creation_time=creation_time, completion_time=job_status)
         if not status:
             return apology("Can't create a job!")
             # return render_template("apology.html", message="Can't create a job!")
 
         rows = db.execute(
-            "SELECT * FROM jobs WHERE user_id = :user_id AND time = :time;", user_id=id, time=time)
+            "SELECT * FROM jobs WHERE user_id = :user_id AND creation_time = :creation_time;", user_id=id, creation_time=creation_time)
 
         job_id = rows[0]["job_id"]
 
@@ -262,27 +261,86 @@ def jobs():
         clearFolderContents(tmp_directory)
 
         path, dirs, files = next(os.walk(UPLOAD_FOLDER))
-        print(files)
-        text_summary_list = []
 
-        model_directory = "my_model_directory"
-        textsummarizer = TextSummarizer.TextSummarizer(model_directory)
-        
+        html_response_data_list = []
         for file in files:            
             original_file_name = file
-            summary_file_name = "summary_" + original_file_name
+            result_file_name = "result_" + original_file_name
             input_path = os.path.join(jobs_id_input_dir, original_file_name)
-            output_path = os.path.join(jobs_id_output_dir, summary_file_name)
+            output_path = os.path.join(jobs_id_output_dir, result_file_name)
 
-            text = ""
-            with open(input_path, 'r') as f:
-                text = f.read()
-            summary = textsummarizer.get_summary(text)
-            with open(output_path, 'w') as f:
-                f.write(summary)
-            text_summary_tuple = (text, summary)
-            text_summary_list.append(text_summary_tuple)
-        return render_template("summary.html", message="The job has been created and the JOBID is {}".format(job_id), text_summary_list=text_summary_list)
+            api_route, api_payload, api_request_value, template_file_data = get_api_payload(input_path, task_type)
+            template_file, title = template_file_data
+
+            api_url = api_home + api_route
+            
+            response = requests.post(api_url, data=api_payload)
+            api_response = response.json()
+            api_response_value = process_api_response(output_path, task_type, api_response)
+
+            html_response_data_list.append((api_request_value, api_response_value))
+        
+        completion_time = datetime.datetime.now(pytz.timezone(
+            'Asia/Calcutta')).strftime('%Y-%m-%d %H:%M:%S')
+        job_status = "Complete"
+        message = "The job has been created and the JOBID is {}".format(job_id)
+        rows = db.execute(
+            "UPDATE jobs  SET completion_time = :completion_time, status = :status WHERE job_id = :job_id;", completion_time=completion_time, status=job_status, job_id=job_id)
+
+    
+        return render_template(template_file, title=title, message=message, html_response_data_list=html_response_data_list)
+
+
+def get_api_payload(input_path, task_type):
+    api_payload_dict = {}
+    api_request_key = None
+    api_request_value = None
+    api_route = "/" + task_type
+    template_file = f"{task_type}.html"
+    template_title = ""
+    
+    if task_type == "captiongeneration":
+        template_title = "Caption Generation"
+        api_request_key = "imageb64"
+        api_request_value = BinaryData_Base64_Utils.BinaryData_Base64_Utils.binaryFile_to_base64String(input_path)
+
+    elif task_type == "cartoonization":
+        template_title = "Cartoonization"
+        api_request_key = "imageb64"
+        api_request_value = BinaryData_Base64_Utils.BinaryData_Base64_Utils.binaryFile_to_base64String(input_path)
+
+    elif task_type == "textsummarization":
+        template_title = "Text Summarization"
+        api_request_key = "text"
+        with open(input_path, "r") as f:
+            api_request_value = f.read()
+
+    api_payload_dict[api_request_key] = api_request_value
+    api_payload = json.dumps(api_payload_dict, indent=4)
+    template_file_data = (template_file, template_title)
+
+    return api_route, api_payload, api_request_value, template_file_data
+
+
+def process_api_response(output_path, task_type, api_response):
+    api_response_dict = api_response
+    api_response_key = None
+    if task_type == "captiongeneration":
+        api_response_key = "caption"
+        output_path = os.path.splitext(output_path)[0]+'.txt'
+        with open(output_path, 'w') as f:
+            f.write(api_response[api_response_key])
+
+    elif task_type == "cartoonization":
+        api_response_key = "cartoonized_imageb64"
+        BinaryData_Base64_Utils.BinaryData_Base64_Utils.base64String_to_binaryFile(api_response[api_response_key], output_path)
+
+    elif task_type == "textsummarization":
+        api_response_key = "summary"
+        with open(output_path, 'w') as f:
+            f.write(api_response[api_response_key])
+    api_response_value = api_response_dict[api_response_key]
+    return api_response_value
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -344,7 +402,7 @@ def profile():
 
 @app.route("/queue", methods=["GET"])
 def queue():
-    rows = db.execute("SELECT job_id, file_count, time FROM jobs;")
+    rows = db.execute("SELECT * FROM jobs;")
     return render_template("queue.html", jobs=rows)
 
 
@@ -424,7 +482,7 @@ def reset():
     elif request.method == "POST":
         username = request.form.get("username")
         email = request.form.get("email")
-# Check if username and email are in datababse
+        # Check if username and email are in datababse
         rows = db.execute(
             "SELECT * FROM users WHERE username = :username", username=username)
 
@@ -487,10 +545,14 @@ def reset_links(token):
             return apology("Passwords do not match.")
             # return render_template("apology.html", message="Passwords don not match.")
 
+        # TODO create a table instead of using text files
+        # TODO remove the link from the reset file after resetting the password 
         file = open("./reset/tokens", "r")
         l = list(file)
         file.close()
-
+        
+        current_time_object = datetime.datetime.now(pytz.timezone(
+            'Asia/Calcutta'))
         sent_time = ""
         user_id = ""
 
@@ -500,6 +562,8 @@ def reset_links(token):
                 sent_time = l[i][1]
                 user_id = l[i][2]
 
+
+        sent_time_object = dateutil.parser.isoparse(sent_time)
                 # if time is less than 30 minutes, then continue
 
         # email = rows[0]["email"]
@@ -512,19 +576,21 @@ def reset_links(token):
         rows = db.execute("SELECT * FROM users WHERE id = :id;", id=user_id)
 
         if not rows:
-            return apology("Sorry an error has occured")
+            return apology("Sorry an error has occured, user not found")
             # return render_template("apology.html", message="Sorry an error has occured")
 
+        if (current_time_object - sent_time_object).total_seconds() > 1800:
+            return apology("Sorry the reset link is expired, please try resetting the password again.")
         rows = db.execute("UPDATE users SET hash = :hash WHERE id = :id;",
                           hash=generate_password_hash(new_password), id=user_id)
 
         if not rows:
             return apology("Unable to Change Password")
-            return render_template("apology.html", message="Unable to Change Password")
 
         # send email to the user"
         message = "Password has been changed!"
         session["user_id"] = user_id
+        
         return render_template("success.html", message=message)
 
 
@@ -536,8 +602,9 @@ def upload():
     elif request.method == "POST":
         # Error checking
         file_count = request.form.get("file_count")
+        task_type = str(request.form.get("task_type"))
         file_count = int(file_count)
-        if not file_count:
+        if not file_count or not task_type:
             return render_template("apology.html", message="Invalid Input")
 
-        return render_template("upload.html", file_count=file_count)
+        return render_template("upload.html", file_count=file_count, task_type=task_type)
